@@ -28,7 +28,7 @@ namespace Lab22.Controllers
 
         }
         // Hiển thị form thêm sản phẩm mới
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Add()
 
         {
