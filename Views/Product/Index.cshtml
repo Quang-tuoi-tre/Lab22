@@ -1,14 +1,22 @@
-﻿@model IEnumerable<Lab22.Models.Product>
+﻿
+@model IEnumerable<Lab22.Models.Product>
 
 @{
     ViewData["Title"] = "Index";
 }
 
 <h1>Index</h1>
-
+@if (User.IsInRole("Admin") )
+{
 <p>
     <a asp-action="Add">Create New</a>
 </p>
+}
+
+
+
+
+
 <table class="table">
     <thead>
         <tr>
@@ -56,9 +64,15 @@
                 @Html.DisplayFor(modelItem => item.Category.Name)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    @if (User.IsInRole("Admin"))
+                    {
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                    }
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> 
+                    @if (User.IsInRole("Admin"))
+                    {
                 <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
             </td>
         </tr>
 }

@@ -1,5 +1,6 @@
 ﻿using Lab22.Models;
 using Lab22.Respositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -27,6 +28,7 @@ namespace Lab22.Controllers
 
         }
         // Hiển thị form thêm sản phẩm mới
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Add()
 
         {
@@ -83,7 +85,8 @@ namespace Lab22.Controllers
             return View(product);
         }
 
-public async Task<IActionResult> Edit(int id)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(int id)
 
         {
             var product = await _productRepository.GetByIdAsync(id);
@@ -149,7 +152,7 @@ public async Task<IActionResult> Edit(int id)
 
         }
         // Hiển thị form xác nhận xóa sản phẩm
-
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
 
         {
