@@ -73,6 +73,7 @@ namespace Lab22.Areas.Identity.Pages.Account
         {
         
             [Required]
+            [Display(Name = "FullName")]
             public string Address { get; set; }
             [Required]
             public string FullName { get; set; }

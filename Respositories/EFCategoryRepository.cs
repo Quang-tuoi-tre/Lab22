@@ -34,10 +34,27 @@ namespace Lab22.Respositories
             _context.Categories.Update(category);
             await _context.SaveChangesAsync();
         }
+        //public async Task DeleteAsync(int id)
+        //{
+
+
+        //    var category = await _context.Categories.FindAsync(id);
+        //    _context.Categories.Remove(category);
+        //    await _context.SaveChangesAsync();
+        //}
         public async Task DeleteAsync(int id)
         {
-
             var category = await _context.Categories.FindAsync(id);
+            if (category == null)
+            {
+                throw new KeyNotFoundException($"Thể loại không tồn tại với id: {id}");
+            }
+
+            // Xóa tất cả sản phẩm thuộc thể loại
+            var products = await _context.Products.Where(p => p.CategoryId == id).ToListAsync();
+            _context.Products.RemoveRange(products);
+
+            // Xóa thể loại
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
         }
