@@ -3,6 +3,7 @@ using Lab22.Respositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.FileProviders;
 
 namespace Lab22.Controllers
 {
@@ -105,49 +106,39 @@ namespace Lab22.Controllers
 
         public async Task<IActionResult> Edit(Product product,
 
-        IFormFile imageUrl)
+        IFormFile imageUrl, int id)
         {
-            //    ModelState.Remove("ImageUrl"); // Loại bỏ xác thực ModelState cho
-
-            //if (id != product.Id)
-            //    {
-            //        return NotFound();
-            //    }
+            ModelState.Remove("ImageUrl");
+            if (id != product.Id)
+            {
+                return NotFound();
+            }
             if (ModelState.IsValid)
             {
+                var existingProduct = await
+                _productRepository.GetByIdAsync(id);
+                if (imageUrl == null)
 
-                //                var existingProduct = await
-                //                _productRepository.GetByIdAsync(id); // Giả định có phương thức GetByIdAsync
-                //                                                     // Giữ nguyên thông tin hình ảnh nếu không có hình mới được
-
-                if (imageUrl != null)
                 {
-
-                    //                {
-                    //                    product.ImageUrl = existingProduct.ImageUrl;
-                    //                }
-                    //                else
-                    //                {
-                    //                    // Lưu hình ảnh mới
+                    product.ImageUrl = existingProduct.ImageUrl;
+                }
+                else
+                {
+                    // Lưu hình ảnh mới
                     product.ImageUrl = await SaveImage(imageUrl);
                 }
-                //                }
-                //                // Cập nhật các thông tin khác của sản phẩm
-                //                existingProduct.Name = product.Name;
-                //                existingProduct.Price = product.Price;
-                //                existingProduct.Description = product.Description;
-                //                existingProduct.CategoryId = product.CategoryId;
-                //                existingProduct.ImageUrl = product.ImageUrl;
-                await _productRepository.UpdateAsync(product);
+                // Cập nhật các thông tin khác của sản phẩm
+                existingProduct.Name = product.Name;
+                existingProduct.Price = product.Price;
+                existingProduct.Description = product.Description;
+                existingProduct.CategoryId = product.CategoryId;
+                existingProduct.ImageUrl = product.ImageUrl;
+                await _productRepository.UpdateAsync(existingProduct);
 
-                //                return RedirectToAction(nameof(Index));
-
-
-                //}
-                //            var categories = await _categoryRepository.GetAllAsync();
-                //            ViewBag.Categories = new SelectList(categories, "Id", "Name");
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
+            var categories = await _categoryRepository.GetAllAsync();
+            ViewBag.Categories = new SelectList(categories, "Id", "Name");
             return View(product);
 
         }
@@ -172,6 +163,19 @@ namespace Lab22.Controllers
             await _productRepository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
 
+        }
+        private async Task<string> DeleteImage(IFormFile image)
+        {
+            var fileProvider = new PhysicalFileProvider("wwwroot/images");            // Tạo đường dẫn lưu trữ hình ảnh
+            var filePath = Path.Combine("wwwroot/images", image.FileName);
+
+            // Xóa file hình ảnh
+            if (fileProvider.GetFileInfo(filePath).Exists)
+            {
+                //fileProvider.DeleteFile(filePath);
+            }
+
+            return image.FileName;
         }
     }
 }
