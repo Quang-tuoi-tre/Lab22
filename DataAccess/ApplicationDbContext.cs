@@ -13,5 +13,8 @@ namespace Lab22.DataAccess
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
+
+        public DbSet<CartItem> CartItems { get; set; }
+
     }
 }

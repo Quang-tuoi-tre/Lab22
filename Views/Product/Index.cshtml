@@ -73,6 +73,8 @@
                     {
                 <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                     }
+                    <a asp-controller="ShoppingCart" asp-action="AddToCart" asp-route-id="@item.Id">Dặt hàng</a>
+
             </td>
         </tr>
 }
