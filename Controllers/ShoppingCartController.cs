@@ -1,9 +1,14 @@
 ﻿using Lab22.DataAccess;
 using Lab22.Models;
 using Lab22.Respositories;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.Globalization;
+
+
 
 namespace Lab22.Controllers
 {
@@ -12,12 +17,16 @@ namespace Lab22.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IProductRepository _productRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+
         public ShoppingCartController(IProductRepository productRepository,
-        ICategoryRepository categoryRepository, ApplicationDbContext context)
+        ICategoryRepository categoryRepository, ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
             _context = context;
+            _userManager = userManager;
         }
         List<CartItem>? GetCartItems()
         {
@@ -78,7 +87,7 @@ namespace Lab22.Controllers
         //            return product;
         //        }
 
-      
+
         public ActionResult AddToCart(int id)
         {
             Product? itemProduct = _context.Products.FirstOrDefault(p => p.Id == id);
@@ -102,7 +111,7 @@ namespace Lab22.Controllers
             else
                 findCartItem.Quantity++;
             SaveCartSession(carts);
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "Product");
         }
         public ActionResult UpdateCart(int id, int quantity)
         {
@@ -126,5 +135,40 @@ namespace Lab22.Controllers
             }
             return RedirectToAction("Index");
         }
+
+        //[HttpPost]
+        //[Authorize]
+        public async Task<IActionResult> Order()
+        {
+            try
+            {
+                var carts = GetCartItems();
+                var user = await _userManager.GetUserAsync(User);
+                var order = new Order
+                {
+                    UserId = user != null ? user.Id : null,
+                    OrderDate = DateTime.UtcNow,
+                    TotalPrice = carts.Sum(i => i.Price * i.Quantity),
+                    OrderDetails = carts.Select(i => new OrderDetail
+                    {
+                        Order = new Order(),
+                        ProductId = i.Id,
+                        Quantity = i.Quantity,
+                        Price = i.Price
+                    }).ToList()
+                };
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+                //xóa session giỏ hàng
+                HttpContext.Session.Remove("cart");
+                return View("Order", order);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
     }
 }

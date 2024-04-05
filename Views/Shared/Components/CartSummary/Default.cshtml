@@ -1,0 +1,44 @@
+﻿@model CartSummaryViewModel
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<style>
+    .cart-wrapper{
+        margin-top: 8px;
+    }
+    .badge {
+        padding-left: 9px;
+        padding-right: 9px;
+        -webkit-border-radius: 9px;
+        -moz-border-radius: 9px;
+        border-radius: 9px;
+    }
+
+    .label-warning[href],
+    .badge-warning[href] {
+        background-color: #c67605;
+    }
+
+    #lblCartCount {
+        font-size: 12px;
+        background: #ff0000;
+        color: #fff;
+        padding: 0 5px;
+        vertical-align: top;
+        margin-left: -10px;
+    }
+    
+</style>
+
+<div class="cart-wrapper">
+        <a asp-controller="ShoppingCart" asp-action="Index" > <i class="fa-solid fa-cart-shopping fa-lg" style="color: #0060ff;"></i>
+
+    </a>
+    @if (Model.NumberOfItems > 0)
+    {
+        <span class='badge badge-warning' id='lblCartCount'> @Model.NumberOfItems </span>
+        
+    }
+
+    <a></a>
+</div>

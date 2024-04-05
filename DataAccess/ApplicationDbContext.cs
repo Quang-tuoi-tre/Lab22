@@ -16,5 +16,9 @@ namespace Lab22.DataAccess
 
         public DbSet<CartItem> CartItems { get; set; }
 
+        public DbSet<Order> Orders { get; set; }
+
+        public DbSet<OrderDetail> OrderDetails { get; set; }
+
     }
 }

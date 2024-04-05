@@ -1,0 +1,14 @@
+﻿@model Lab22.Models.Order
+
+@{
+    ViewData["Title"] = "Order";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Order Completed</h2>
+<p>Your order with Id @Model.Id has been placed successfully</p>
+<p>Your Total price is @Model.TotalPrice Đ</p>
+<div>
+    <a asp-action="Index" asp-controller="Product">Về trang chủ</a>
+</div>
+

@@ -1,32 +1,36 @@
-﻿using Lab22.Models;
+﻿using Lab22.DataAccess;
+using Lab22.Models;
 using Lab22.Respositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
 namespace Lab22.Controllers
 {
     public class ProductController : Controller
     {
+        private readonly ApplicationDbContext _context;
 
         private readonly IProductRepository _productRepository;
         private readonly ICategoryRepository _categoryRepository;
         public ProductController(IProductRepository productRepository,
-        ICategoryRepository categoryRepository)
+        ICategoryRepository categoryRepository, ApplicationDbContext context)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
+            _context = context;
         }
         // Hiển thị danh sách sản phẩm
 
-        public async Task<IActionResult> Index()
-
+        public async Task<IActionResult> Index(int pageNumber = 1)
         {
-            var products = await _productRepository.GetAllAsync();
-
-            return View(products);
-
+            int pageSize = 10;
+            IQueryable<Product> productsQuery = _context.Products.Include(p => p.Category);
+            var paginatedProducts = await PaginatedList<Product>.CreateAsync(productsQuery,
+            pageNumber, pageSize);
+            return View(paginatedProducts);
         }
         // Hiển thị form thêm sản phẩm mới
         [Authorize(Roles = "Admin")]
@@ -177,5 +181,32 @@ namespace Lab22.Controllers
 
             return image.FileName;
         }
+        [HttpGet]
+        public IActionResult SearchProducts(string querry)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(querry))
+                
+                    return BadRequest("Search querry is required.");
+                    var result = _context.Products.Where(p => p.Name.Contains(querry) || (p.Description != null && p.Description.Contains(querry))).ToList();
+                    return View("Index", result);
+                
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        public async Task<IActionResult> PagingNoLibrary(int pageNumber)
+        {
+            int pageSize = 2;
+            IQueryable<Product> productsQuery = _context.Products.Include(p => p.Category);
+            var pagedProducts = await productsQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            return View(pagedProducts);
+        }
+      
+
     }
 }

@@ -5,9 +5,14 @@
 @inject UserManager<ApplicationUser> UserManager
 
 <ul class="navbar-nav">
+
+    <li class="nav-item">
+        @await Component.InvokeAsync("CartSummary")
+    </li>
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item">
+
         <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
     </li>
     @if (User.IsInRole("Admin") )

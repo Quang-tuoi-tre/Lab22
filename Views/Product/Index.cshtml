@@ -1,9 +1,13 @@
 ﻿
-@model IEnumerable<Lab22.Models.Product>
+@* @model IEnumerable<Lab22.Models.Product> *@
+
+ @model PaginatedList<Lab22.Models.Product>
 
 @{
     ViewData["Title"] = "Index";
 }
+
+
 
 <h1>Index</h1>
 @if (User.IsInRole("Admin") )
@@ -12,7 +16,15 @@
     <a asp-action="Add">Create New</a>
 </p>
 }
-
+@using (Html.BeginForm("SearchProducts", "Products", FormMethod.Get))
+{
+    <input type="text" name="query" placeholder="Tìm Sản phẩm" />
+    <input type="submit" value="Search" />
+}
+<form action="/Products/SearchProducts" method="get">
+    <input type="text" name="query" placeholder="Tìm Sản phẩm" />
+    <input type="submit" value="Search" />
+</form>
 
 
 
@@ -21,19 +33,19 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+              Name
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Price)
+                Price
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+         Description
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ImageUrl)
+               ImageUrl
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Category)
+                Category
             </th>
             <th></th>
         </tr>
@@ -73,10 +85,42 @@
                     {
                 <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                     }
-                    <a asp-controller="ShoppingCart" asp-action="AddToCart" asp-route-id="@item.Id">Dặt hàng</a>
+                    <a asp-controller="ShoppingCart" asp-action="AddToCart" asp-route-id="@item.Id">Đặt hàng</a>
 
             </td>
         </tr>
 }
     </tbody>
 </table>
+
+ <div>
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            @for (int i = 1; i <= @Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == @Model.PageIndex ?"active" : "")">
+
+                    <a class="page-link"
+                       href="@Url.Action("Index", new { pageNumber = i })">@i</a>
+
+                </li>
+            }
+        </ul>
+    </nav>
+</div> 
+
+@{
+    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+}
+<a asp-action="Index"
+   asp-route-pageNumber="@(Model.PageIndex - 1)" class="btn btn-default
+@prevDisabled">
+    Previous
+</a>
+<a asp-action="Index"
+   asp-route-pageNumber="@(Model.PageIndex + 1)"
+   class="btn btn-default @nextDisabled">
+    Next
+</a>
+
