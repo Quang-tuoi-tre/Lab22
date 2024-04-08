@@ -181,32 +181,51 @@ namespace Lab22.Controllers
 
             return image.FileName;
         }
-        [HttpGet]
-        public IActionResult SearchProducts(string querry)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(querry))
+        //[HttpGet]
+        //public IActionResult SearchProducts(string querry)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrWhiteSpace(querry))
                 
-                    return BadRequest("Search querry is required.");
-                    var result = _context.Products.Where(p => p.Name.Contains(querry) || (p.Description != null && p.Description.Contains(querry))).ToList();
-                    return View("Index", result);
+        //            return BadRequest("Search querry is required.");
+        //            var result = _context.Products.Where(p => p.Name.Contains(querry) || (p.Description != null && p.Description.Contains(querry))).ToList();
+        //            return View("Index", result);
                 
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-        public async Task<IActionResult> PagingNoLibrary(int pageNumber)
-        {
-            int pageSize = 2;
-            IQueryable<Product> productsQuery = _context.Products.Include(p => p.Category);
-            var pagedProducts = await productsQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
+        //public async Task<IActionResult> PagingNoLibrary(int pageNumber)
+        //{
+        //    int pageSize = 2;
+        //    IQueryable<Product> productsQuery = _context.Products.Include(p => p.Category);
+        //    var pagedProducts = await productsQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
-            return View(pagedProducts);
+        //    return View(pagedProducts);
+        //}
+        public List<string> SearchSuggestions(string query)
+        {
+
+            return _context.Products
+
+            .Where(p => p.Name.StartsWith(query))
+            .Select(p => p.Name)
+            .ToList();
+         
         }
-      
+        [HttpGet]
+        public async Task<IActionResult> SearchProducts(string query, int pageNumber = 1)
+        {
+            IQueryable<Product> productsQuery = _context.Products.Include(p => p.Category)
+            .Where(p => p.Name.Contains(query));
+
+            var paginatedProducts = await PaginatedList<Product>.CreateAsync(productsQuery, pageNumber, 10);
+            return PartialView(paginatedProducts);
+        }
+
 
     }
 }

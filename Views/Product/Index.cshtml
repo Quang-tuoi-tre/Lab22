@@ -6,17 +6,43 @@
 @{
     ViewData["Title"] = "Index";
 }
+<style>
+/* Style the dropdown menu */
+.dropdown-content {
+display: none;
+position: absolute;
+background-color: #fff;
+border: 1px solid #ccc;
+border-radius: 5px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+z-index: 1000; /* Ensure dropdown is above other elements */
+max-height: 200px; /* Adjust max-height as needed */
+overflow-y: auto; /* Enable scrolling if needed */
+width: 100%; /* Set width to match search input */
+box-sizing: border-box; /* Ensure width includes padding and
 
+border */
+}
+/* Style each suggestion item */
+.suggestion {
+padding: 10px;
+cursor: pointer;
+}
+/* Change color of suggestion item on hover */
+.suggestion:hover {
+
+background-color: #f4f4f4;
+}
+</style>
 
 
 <h1>Index</h1>
-@if (User.IsInRole("Admin") )
-{
+
 <p>
     <a asp-action="Add">Create New</a>
 </p>
-}
-@using (Html.BeginForm("SearchProducts", "Products", FormMethod.Get))
+
+@* @using (Html.BeginForm("SearchProducts", "Products", FormMethod.Get))
 {
     <input type="text" name="query" placeholder="Tìm Sản phẩm" />
     <input type="submit" value="Search" />
@@ -24,12 +50,19 @@
 <form action="/Products/SearchProducts" method="get">
     <input type="text" name="query" placeholder="Tìm Sản phẩm" />
     <input type="submit" value="Search" />
+</form> *@
+<form id="search-form" action="/Product/SearchProducts" method="get" class="dropdown">
+    <input id="search-input" type="text" name="query" placeholder="Tìm
+Sản phẩm" />
+    <div id="search-results" class="dropdown-content">
+        
+    </div>
+    <input type="submit" value="Search" />
 </form>
 
 
 
-
-<table class="table">
+<table class="table" id="products">
     <thead>
         <tr>
             <th>
@@ -91,6 +124,8 @@
         </tr>
 }
     </tbody>
+
+    
 </table>
 
  <div>
@@ -106,10 +141,10 @@
                 </li>
             }
         </ul>
-    </nav>
+    </nav 
 </div> 
 
-@{
+@* @{
     var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
     var nextDisabled = !Model.HasNextPage ? "disabled" : "";
 }
@@ -122,5 +157,131 @@
    asp-route-pageNumber="@(Model.PageIndex + 1)"
    class="btn btn-default @nextDisabled">
     Next
-</a>
+</a>  *@
+@section Scripts{
+  <script>
+    $(document).ready(function () {
+        $("#search-input").keyup(function () {
+            var query = $(this).val();
+            if (query !== '') {
+                $.ajax({
+                    url: "/product/SearchSuggestions",
+                    type: "GET",
+                    data: { query: query },
+                    dataType: "json",
+                    success: function (data) {
+                        $("#search-results").empty(); 
+                        $.each(data, function (index, suggestion) {
+                            $("#search-results").append("<div class='suggestion'>" + suggestion + "</div>");
+                        });
+                        $(".dropdown-content").css("display", "block");
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error:", error);
+                    }
+                });
+            } else {
+                $("#search-results").empty(); 
+                $(".dropdown-content").css("display", "none"); 
+            }
+        });
 
+        $("#search-form").submit(function (event) {
+            event.preventDefault();
+            var query = ${ "#search-input"}.val();
+            $.ajax({
+                url: "/Product/SearchProducts",
+                type: "GET",
+                data: { query: query },
+                success: function (data) {
+                    $("#products").html(data);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                }
+            });
+        });
+        
+        // $(document).on("click", ".suggestion", function () {
+        //     var selectedSuggestion = $(this).text();
+        //     $("#search-input").val(selectedSuggestion); 
+
+        //     $("#search-results").empty(); 
+        //     $(".dropdown-content").css("display", "none"); 
+        // });
+
+        // $(document).click(function (event) {
+        //     if (!$(event.target).closest('.dropdown').length) {
+        //         $(".dropdown-content").css("display", "none");
+        //     }
+        // });
+    });
+</script>
+} 
+
+@*  @section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#search-input").keyup(function () {
+                var query = $(this).val();
+                if (query !== '') {
+                    $.ajax({
+                        url: "/product/SearchSuggestions",
+                        type: "GET",
+                        data: { query: query },
+                        dataType: "json",
+                        success: function (data) {
+                            $("#search-results").empty(); // Clear previous suggestions
+                            $.each(data, function (index, suggestion) {
+                                $("#search-results").append("<div class='suggestion'>" + suggestion + "</div>"); // Append new suggestions
+                            });
+                            $(".dropdown-content").css("display", "block"); // Show dropdown
+                        },
+                        error: function (xhr, status, error) {
+                            console.log("Error:", error);
+                        }
+                    });
+                } else {
+                    $("#search-results").empty(); // Clear suggestions if query is empty
+                    $(".dropdown-content").css("display", "none"); // Hide dropdown if input is empty
+                }
+            });
+            //-----------------------------------------
+            $("#search-form").submit(function (event) {
+                // Prevent default form submission behavior
+                event.preventDefault();
+                // Get the search query from the input field
+                var query = $("#search-input").val();
+                // Call the SearchProducts action via AJAX
+                $.ajax({
+                    url: "/Product/SearchProducts",
+                    type: "GET",
+                    data: { query: query },
+                    success: function (data) {
+                    // Handle the response, for example, update a div with the search results
+
+                        $("#products").html(data);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error:", error);
+                    }
+                });
+            });
+            //---------------------------------------------
+            // Handle click on suggestion
+            $(document).on("click", ".suggestion", function () {
+                var selectedSuggestion = $(this).text();
+                $("#search-input").val(selectedSuggestion); // Set search input value to Selected suggestion
+
+                $("#search-results").empty(); // Clear suggestions
+                $(".dropdown-content").css("display", "none"); // Hide dropdown
+            });
+            // Close dropdown if user clicks outside of it
+            $(document).click(function (event) {
+                if (!$(event.target).closest('.dropdown').length) {
+                    $(".dropdown-content").css("display", "none");
+                }
+            });
+        });
+    </script>
+} *@
